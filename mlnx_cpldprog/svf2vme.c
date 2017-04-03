@@ -73,7 +73,7 @@
 #include <sys/stat.h>
 #ifndef DISABLE_JTAG_PROG
 #include <uapi/linux/ioctl.h>
-#include <linux/aspeed_jtag.h>
+#include <uapi/linux/aspeed_jtag.h>
 #endif
 #include "vmopcode.h"
 #include "utilities.h"
@@ -2923,7 +2923,7 @@ int main( int argc, char *argv[] )
 	char JTAGpath[ 1024 ] = { 0 };
 	FILE * fptrVMEFile = NULL;
 	int JTAGfrq;
-	struct runtest_idle runtest;
+	struct aspeed_jtag_runtest_idle runtest;
 
 	printf( "              Mellanox Technologies Ltd.\n" );
 	printf( "     JTAG svf player Version %s Copyright 2017\n\n", VME_VERSION_NUMBER );
@@ -3134,13 +3134,13 @@ int main( int argc, char *argv[] )
 		g_direct_prog = 1;
 
 		JTAGfrq = 20000;
-		ioctl(g_JTAGFile, AST_JTAG_SIOCFREQ, &JTAGfrq);
+		ioctl(g_JTAGFile, ASPEED_JTAG_SIOCFREQ, &JTAGfrq);
 
 		runtest.end = 0;
-		runtest.mode = JTAG_XFER_SW_MODE;
+		runtest.mode = ASPEED_JTAG_XFER_SW_MODE;
 		runtest.reset = 0;
 		runtest.tck = 0;
-		ioctl(g_JTAGFile, AST_JTAG_IOCRUNTEST, &runtest);
+		ioctl(g_JTAGFile, ASPEED_JTAG_IOCRUNTEST, &runtest);
 	}
 #endif
 

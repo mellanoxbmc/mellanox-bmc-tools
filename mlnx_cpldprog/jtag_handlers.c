@@ -41,7 +41,7 @@
 #include <fcntl.h>
 #include <time.h>
 #ifndef DISABLE_JTAG_PROG
-#include <linux/aspeed_jtag.h>
+#include <uapi/linux/aspeed_jtag.h>
 #include <uapi/linux/ioctl.h>
 #endif
 #include "vmopcode.h"
@@ -299,7 +299,7 @@ static void extract_bitbuffer(char *in_buf, int inbuf_len,
 
 static int jtag_sir_xfer(void)
 {
-	struct sir_xfer xfer;
+	struct aspeed_jtag_sir_xfer xfer;
 	char *mask_p = NULL;
 	char *tdo_p = NULL;
 	int TDO_expected = 0;
@@ -326,13 +326,13 @@ static int jtag_sir_xfer(void)
 	tdo_p = g_transaction_data[SIR_DATA_TR].tdo;
 	mask_p = g_transaction_data[SIR_DATA_TR].mask;
 
-	xfer.mode = JTAG_XFER_SW_MODE;
+	xfer.mode = ASPEED_JTAG_XFER_SW_MODE;
 	xfer.tdi = ((unsigned int*)g_bitbuf)[0];
 	xfer.length = g_bitbuf_pos;
 
 #ifndef DISABLE_JTAG_PROG
-	xfer.endir = JTAG_STATE_IDLE;
-	ioctl(g_JTAGFile, AST_JTAG_IOCSIR, &xfer);
+	xfer.endir = ASPEED_JTAG_STATE_IDLE;
+	ioctl(g_JTAGFile, ASPEED_JTAG_IOCSIR, &xfer);
 #endif
 
 	/* check tdo */
@@ -375,7 +375,7 @@ static int jtag_sir_xfer(void)
 
 static int jtag_sdr_xfer(void)
 {
-	struct sdr_xfer xfer;
+	struct aspeed_jtag_sdr_xfer xfer;
 	char *mask_p = NULL;
 	char *tdo_p = NULL;
 	int TDO_expected = 0;
@@ -403,7 +403,7 @@ static int jtag_sdr_xfer(void)
 	tdo_p = g_transaction_data[SDR_DATA_TR].tdo;
 	mask_p = g_transaction_data[SDR_DATA_TR].mask;
 
-	xfer.mode = JTAG_XFER_SW_MODE;
+	xfer.mode = ASPEED_JTAG_XFER_SW_MODE;
 	xfer.tdio = (unsigned int*)g_bitbuf;
 	xfer.length = g_bitbuf_pos;
 
@@ -413,8 +413,8 @@ static int jtag_sdr_xfer(void)
 		xfer.direct = 1;
 
 #ifndef DISABLE_JTAG_PROG
-	xfer.enddr = JTAG_STATE_IDLE;
-	ioctl(g_JTAGFile, AST_JTAG_IOCSDR, &xfer);
+	xfer.enddr = ASPEED_JTAG_STATE_IDLE;
+	ioctl(g_JTAGFile, ASPEED_JTAG_IOCSDR, &xfer);
 #endif
 
 	/* check tdo */
@@ -505,7 +505,7 @@ static int jtag_set_transaction_data(jtag_handler_data_t * data_p,
 
 static int jtag_runtest_xfer(runtest_handler_data_t * data_p)
 {
-	struct runtest_idle runtest;
+	struct aspeed_jtag_runtest_idle runtest;
 	unsigned short delay = 0;
 	unsigned short loop_index = 0;
 	unsigned short ms_index = 0;
@@ -524,12 +524,12 @@ static int jtag_runtest_xfer(runtest_handler_data_t * data_p)
 #endif
 
 	if (data_p->tck){
-		runtest.mode = JTAG_XFER_SW_MODE;
+		runtest.mode = ASPEED_JTAG_XFER_SW_MODE;
 		runtest.end = 0;	/*IDLE*/
 		runtest.reset = 0;
 		runtest.tck = data_p->tck;
 #ifndef DISABLE_JTAG_PROG
-		ioctl(g_JTAGFile, AST_JTAG_IOCRUNTEST, &runtest);
+		ioctl(g_JTAGFile, ASPEED_JTAG_IOCRUNTEST, &runtest);
 #endif
 	}
 
