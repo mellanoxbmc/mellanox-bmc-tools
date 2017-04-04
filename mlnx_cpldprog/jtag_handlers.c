@@ -41,7 +41,7 @@
 #include <fcntl.h>
 #include <time.h>
 #ifndef DISABLE_JTAG_PROG
-#include <uapi/linux/aspeed_jtag.h>
+#include <uapi/linux/aspeed-jtag.h>
 #include <uapi/linux/ioctl.h>
 #endif
 #include "vmopcode.h"
