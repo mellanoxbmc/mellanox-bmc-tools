@@ -24,6 +24,7 @@
 
 CPLD_FIRMWARE_BKP=0
 CPLD_FIRMWARE_BKP_PATH=/usr/share
+JTAG_IF=/dev/jtag0
 
 # gpio32 and gpio33 - JTAG MUX control pins.
 # To enable CPLD JTAG programming via CPU this pins should be:
@@ -34,8 +35,8 @@ GPIO_PATH=/sys/class/gpio
 GPIO_PIN0=gpio32
 GPIO_PIN1=gpio33
 
-if [ ! -e /dev/aspeed-jtag ]; then
-	echo "Can't find JTAG(/dev/aspeed-jtag) interface"
+if [ ! -e $JTAG_IF ]; then
+	echo "Can't find JTAG ( $JTAG_IF ) interface"
 	exit
 fi
 
@@ -56,7 +57,7 @@ echo out > $GPIO_PATH/$GPIO_PIN0/direction
 echo out > $GPIO_PATH/$GPIO_PIN1/direction
 echo 0 > $GPIO_PATH/$GPIO_PIN0/value
 echo 1 > $GPIO_PATH/$GPIO_PIN1/value
-mlnx_cpldprog -infile $1 -prog /dev/aspeed-jtag
+mlnx_cpldprog -d -d -infile $1 -prog $JTAG_IF
 
 if [ CPLD_FIRMWARE_BKP = 1 ]; then
 	#create buckup file

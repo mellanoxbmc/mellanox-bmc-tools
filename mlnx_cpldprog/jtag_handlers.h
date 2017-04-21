@@ -38,36 +38,7 @@
 #define WRITE_HANDLER_BYTE_CMD	1
 #define WRITE_HANDLER_SEND_CMD	2
 
-#ifdef DISABLE_JTAG_PROG
-enum aspeed_jtag_xfer_mode {
-	JTAG_XFER_HW_MODE = 0,
-	JTAG_XFER_SW_MODE = 1,
-};
-
-struct runtest_idle {
-	enum aspeed_jtag_xfer_mode	mode;	/* 0 :HW mode, 1: SW mode */
-	unsigned char			reset;	/* Test Logic Reset */
-	unsigned char			end;	/* o: idle, 1: ir pause, 2: drpause */
-	unsigned char			tck;	/* keep tck */
-};
-
-struct sir_xfer {
-	enum aspeed_jtag_xfer_mode	mode;	/* 0 :HW mode, 1: SW mode */
-	unsigned short			length;	/* bits */
-	unsigned int			tdi;
-	unsigned int			tdo;
-	unsigned char			endir;	/* 0: idle, 1:pause */
-};
-
-struct sdr_xfer {
-	enum aspeed_jtag_xfer_mode	mode;	/* 0 :HW mode, 1: SW mode */
-	unsigned char			direct; /* 0 ; read , 1 : write */
-	unsigned short			length;	/* bits */
-	unsigned int			*tdio;
-	unsigned char			enddr;	/* 0: idle, 1:pause */
-};
-
-#endif
+#define DELAY_CPU_SCALE	150
 
 void jtag_handlers_init(void);
 int null_handler(unsigned char cmd, char data);

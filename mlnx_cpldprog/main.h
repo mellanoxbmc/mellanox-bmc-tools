@@ -1,3 +1,5 @@
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 typedef struct {
     char name[ 30 ];				/* Device name */
@@ -34,3 +36,5 @@ int write(unsigned char data);
 unsigned char reverse( unsigned char a_cDigit );
 short int convertToispSTREAM(long int charcount, unsigned char *data, char options );
 int GetSVFInformation( int * a_piCommandLineIndex, int * a_piCurrentSVFCount, int a_iArgc, char * a_cArgv[], char * a_szErrorMessage );
+
+#endif /* __MAIN_H__ */
