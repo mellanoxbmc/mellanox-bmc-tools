@@ -71,17 +71,15 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#ifndef DISABLE_JTAG_PROG
 #include <uapi/linux/ioctl.h>
-#include <uapi/linux/aspeed-jtag.h>
-#endif
+#include <uapi/linux/jtag.h>
 #include "vmopcode.h"
 #include "utilities.h"
-#include "svf2vme.h"
+#include "main.h"
 #include "jtag_handlers.h"
 
 FILE * g_pSVFFile, * g_pVMEFile;
-int g_JTAGFile;
+int g_JTAGFile = -1;
 char  buffer[strmax];   /*memory to store a string temporary          */
 char  * g_pszSVFString;   /*pointer to current token string*/
 long int g_iFrequency = 0; /* Stores the active frequency (in Hz) */
@@ -97,6 +95,9 @@ char g_cHeader[strmax];/*memory to store a header string */
 /* Variables used in programming foreign devices */
 int g_iVendor = 0;
 long int g_iMaxBufferSize = SCANMAX;      /*the maximum value allowed to allocate memory*/
+
+/* debug level */
+char g_debug = 0;
 
 /*********************************************************************
 *
@@ -2923,7 +2924,7 @@ int main( int argc, char *argv[] )
 	char JTAGpath[ 1024 ] = { 0 };
 	FILE * fptrVMEFile = NULL;
 	int JTAGfrq;
-	struct aspeed_jtag_runtest_idle runtest;
+	struct jtag_run_test_idle runtest;
 
 	printf( "              Mellanox Technologies Ltd.\n" );
 	printf( "     JTAG svf player Version %s Copyright 2017\n\n", VME_VERSION_NUMBER );
@@ -3041,9 +3042,6 @@ int main( int argc, char *argv[] )
 				exit( ERR_COMMAND_LINE_SYNTAX );
 			}
 			strcpy(JTAGpath, argv[ iCommandLineIndex ]);
-#ifdef DISABLE_JTAG_PROG
-			g_direct_prog = 1;
-#else
 			g_JTAGFile = open(JTAGpath, O_RDWR);
 			if(g_JTAGFile == -1){
 				sprintf( szErrorMessage, "Error: can't open JTAG interface file.\n\n" );
@@ -3053,9 +3051,9 @@ int main( int argc, char *argv[] )
 				g_direct_prog = 1;
 				iFullVMEOption = 1;
 			}
-#endif
-		}
-		else {
+		} else if(!strcmp( szCommandLineArg, "-d" )){
+			g_debug ++;
+		} else {
 			sprintf( szErrorMessage, "Error: %s is an unrecognized or misplaced argument.\n\n", szCommandLineArg );
 			printf( "%s", szErrorMessage );
 			PrintHelp();
@@ -3128,21 +3126,18 @@ int main( int argc, char *argv[] )
 
 	jtag_handlers_init();
 
-#ifndef DISABLE_JTAG_PROG
 	if (g_direct_prog){
-		iFullVMEOption = 1;
-		g_direct_prog = 1;
+		sleep(1);
 
 		JTAGfrq = 20000;
-		ioctl(g_JTAGFile, ASPEED_JTAG_SIOCFREQ, &JTAGfrq);
+		ioctl(g_JTAGFile, JTAG_SIOCFREQ, &JTAGfrq);
 
-		runtest.end = 0;
-		runtest.mode = ASPEED_JTAG_XFER_SW_MODE;
+		runtest.endstate = 0;
+		runtest.mode = JTAG_XFER_SW_MODE;
 		runtest.reset = 0;
 		runtest.tck = 0;
-		ioctl(g_JTAGFile, ASPEED_JTAG_IOCRUNTEST, &runtest);
+		ioctl(g_JTAGFile, JTAG_IOCRUNTEST, &runtest);
 	}
-#endif
 
 	if ( iFullVMEOption ) {
 		if (!g_direct_prog){
@@ -3155,9 +3150,7 @@ int main( int argc, char *argv[] )
 		printf( "Begin generating the compressed VME file \n(%s)......\n\n", szVMEFilename );
 		iRetCode = ispsvf_convert( iSVFCount, cfgChain, szVMEFilename, true ); 
 	}
-#ifndef DISABLE_JTAG_PROG
 	close(g_JTAGFile);
-#endif
 	/* Free chain memory */
 	DeAllocateCFGMemory();
 

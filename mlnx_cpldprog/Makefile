@@ -2,8 +2,8 @@ incdir	= include
 DESTDIR = $(KERNEL_SRC)/
 
 CFLAGS =-g -Wall
-DEPS = svf2vme.h utilities.h vmopcode.h jtag_handlers.h 
-OBJ = jtag_handlers.o utilities.o svf2vme.o
+DEPS = main.h utilities.h vmopcode.h jtag_handlers.h 
+OBJ = jtag_handlers.o utilities.o main.o
 
 CFLAGS += -I$(DESTDIR)$(incdir)
 
