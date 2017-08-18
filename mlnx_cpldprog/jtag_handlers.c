@@ -38,8 +38,8 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <time.h>
+#include <sys/ioctl.h>
 #include <uapi/linux/jtag.h>
-#include <uapi/linux/ioctl.h>
 #include "vmopcode.h"
 #include "utilities.h"
 #include "jtag_handlers.h"
@@ -205,12 +205,15 @@ void jtag_print_xfer(jtag_transaction_t * data_p, int more_data){
 
 void jtag_print_xfer_raw(struct jtag_xfer * xfer){
 	int i;
+	unsigned char * data;
+	data = (void*)(unsigned int)xfer->tdio;
+
 	printf("XFER %s(%s) len: %d\n[",
 			(xfer->type == JTAG_SIR_XFER)  ? "SIR" : "SDR",
 			(xfer->direction == JTAG_READ_XFER)  ? "IN" : "OUT",
 			xfer->length);
 	for (i = xfer->length; i>0; i -= 8)
-		printf("%02X ", (unsigned char)xfer->tdio[(i-1) / 8]);
+		printf("%02X ", data[(i-1) / 8]);
 	printf("]\n");
 }
 #endif
@@ -335,7 +338,7 @@ static int jtag_sir_xfer(void)
 
 	xfer.mode = JTAG_XFER_SW_MODE;
 	xfer.type = JTAG_SIR_XFER;
-	xfer.tdio = g_bitbuf;
+	xfer.tdio = (__u64)g_bitbuf;
 	xfer.length = g_bitbuf_pos;
 
 	if (tdo_p)
@@ -350,11 +353,13 @@ static int jtag_sir_xfer(void)
 		printf("\n========================\n");
 		jtag_print_xfer_raw(&xfer);
 	}
+	usleep(25 * 1000);
 #endif
 
 	ioctl(g_JTAGFile, JTAG_IOCXFER, &xfer);
 
 #if (JTAG_DEBUG != 0)
+	usleep(25 * 1000);
 	if (g_debug > 0) {
 		jtag_print_xfer_raw(&xfer);
 		printf("========================\n\n");
@@ -365,7 +370,7 @@ static int jtag_sir_xfer(void)
 	if (tdo_p){
 		tdo_data = tdo_data_buf;
 
-		extract_bitbuffer(xfer.tdio, xfer.length,
+		extract_bitbuffer((char *)(uintptr_t)xfer.tdio, xfer.length,
 						g_transaction_data[HIR_TRAILER].bit_size,
 						(char *)tdo_data,
 						g_transaction_data[SIR_DATA_TR].bit_size,
@@ -434,7 +439,7 @@ static int jtag_sdr_xfer(void)
 
 	xfer.mode = JTAG_XFER_SW_MODE;
 	xfer.type = JTAG_SDR_XFER;
-	xfer.tdio = g_bitbuf;
+	xfer.tdio = (__u64)g_bitbuf;
 	xfer.length = g_bitbuf_pos;
 
 	if (tdo_p)

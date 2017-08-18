@@ -71,7 +71,7 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <uapi/linux/ioctl.h>
+#include <sys/ioctl.h>
 #include <uapi/linux/jtag.h>
 #include "vmopcode.h"
 #include "utilities.h"
@@ -2382,7 +2382,6 @@ short int convertToispSTREAM(long int numbits, unsigned char *data_buf, char opt
 	int FFcount;
 	int bytes;
 	int i;
-	int j;
 	char opt;
 	char mode;
 	unsigned char cur_char;
@@ -2395,7 +2394,6 @@ short int convertToispSTREAM(long int numbits, unsigned char *data_buf, char opt
 		bytes = numbits / 8;
 	}
 	opt = options;
-	j = 0;
 	mode = 0;
 
 	/* Determine the compression mode recommended */
